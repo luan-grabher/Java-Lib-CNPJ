@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 import org.jsoup.Jsoup;
@@ -15,7 +16,7 @@ public class CNPJ {
 
     private static final String cnpjInfoUrl = "http://cnpj.info/";
 
-    public static void main(String[] args) {
+    public static void main(String[] args) {        
         get("74873266000185");
     }
 
@@ -50,6 +51,22 @@ public class CNPJ {
                         infos.put(cols.first().text(), cols.last().text());
                     });
                     
+                    //Pega endereço
+                    String address = doc.getElementById("content").html();
+                    address = address.split(".*Endere.o")[1].split("Contatos.*")[0];
+                    address = address.replaceAll("<h3>", "").replaceAll("</h3>", "");
+                    
+                    String[] addressArray = address.split("\n<br>");
+                    
+                    infos.put("Rua", addressArray[0].split(", ")[0]);
+                    infos.put("Rua numero", addressArray[0].split(", ")[1]);
+                    infos.put("Bairro", addressArray[1]);
+                    infos.put("Cidade", addressArray[2].split(" - ")[0]);
+                    infos.put("UF", addressArray[2].split(" - ")[1]);
+                    infos.put("CEP", addressArray[3].replaceAll("\n", ""));
+                    
+                    System.out.println(address);
+                    
                     return infos;
                 }
             }
@@ -69,7 +86,7 @@ public class CNPJ {
     private static String getHtmlFromCon(HttpURLConnection con) {
         try {
             BufferedReader in = new BufferedReader(
-                    new InputStreamReader(con.getInputStream()));
+                    new InputStreamReader(con.getInputStream(), Charset.forName("ISO-8859-1")));
             String inputLine;
             StringBuffer content = new StringBuffer();
             while ((inputLine = in.readLine()) != null) {
