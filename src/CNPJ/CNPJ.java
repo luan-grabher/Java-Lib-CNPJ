@@ -63,9 +63,7 @@ public class CNPJ {
                     infos.put("Bairro", addressArray[1]);
                     infos.put("Cidade", addressArray[2].split(" - ")[0]);
                     infos.put("UF", addressArray[2].split(" - ")[1]);
-                    infos.put("CEP", addressArray[3].replaceAll("\n", ""));
-                    
-                    System.out.println(address);
+                    infos.put("CEP", addressArray[3].replaceAll("\n", ""));                    
                     
                     return infos;
                 }
