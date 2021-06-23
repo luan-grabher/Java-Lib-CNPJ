@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.text.Normalizer;
 import java.util.HashMap;
 import java.util.Map;
 import org.jsoup.Jsoup;
@@ -61,7 +62,7 @@ public class CNPJ {
                     infos.put("Rua", addressArray[0].split(", ")[0]);
                     infos.put("Rua numero", addressArray[0].split(", ")[1]);
                     infos.put("Bairro", addressArray[1]);
-                    infos.put("Cidade", addressArray[2].split(" - ")[0]);
+                    infos.put("Cidade", removerAcentos(addressArray[2].split(" - ")[0])).toUpperCase();
                     infos.put("UF", addressArray[2].split(" - ")[1]);
                     infos.put("CEP", addressArray[3].replaceAll("\n", ""));                    
                     
@@ -73,6 +74,10 @@ public class CNPJ {
         }
 
         return null;
+    }
+    
+    public static String removerAcentos(String str) {
+        return Normalizer.normalize(str, Normalizer.Form.NFD).replaceAll("[^\\p{ASCII}]", "");
     }
 
     /**
