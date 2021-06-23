@@ -62,7 +62,7 @@ public class CNPJ {
                     infos.put("Rua", addressArray[0].split(", ")[0]);
                     infos.put("Rua numero", addressArray[0].split(", ")[1]);
                     infos.put("Bairro", addressArray[1]);
-                    infos.put("Cidade", removerAcentos(addressArray[2].split(" - ")[0])).toUpperCase();
+                    infos.put("Cidade", removerAcentos(addressArray[2].split(" - ")[0]).toUpperCase());
                     infos.put("UF", addressArray[2].split(" - ")[1]);
                     infos.put("CEP", addressArray[3].replaceAll("\n", ""));                    
                     
