@@ -6,7 +6,10 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.text.Normalizer;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -53,18 +56,22 @@ public class CNPJ {
                     });
                     
                     //Pega endereço
-                    String address = doc.getElementById("content").html();
-                    address = address.split(".*Endere.o")[1].split("Contatos.*")[0];
-                    address = address.replaceAll("<h3>", "").replaceAll("</h3>", "");
+                    String addressHTML = doc.getElementById("content").html();
+                    addressHTML = addressHTML.split(".*Endere.o")[1].split("Contatos.*")[0];
+                    addressHTML = addressHTML.replaceAll("<h3>", "").replaceAll("</h3>", "");
                     
-                    String[] addressArray = address.split("\n<br>");
+                    List<String> address = new ArrayList<String>(Arrays.asList(addressHTML.split("\n<br>")));
                     
-                    infos.put("Rua", addressArray[0].split(", ")[0]);
-                    infos.put("Rua numero", addressArray[0].split(", ")[1]);
-                    infos.put("Bairro", addressArray[1]);
-                    infos.put("Cidade", removerAcentos(addressArray[2].split(" - ")[0]).toUpperCase());
-                    infos.put("UF", addressArray[2].split(" - ")[1]);
-                    infos.put("CEP", addressArray[3].replaceAll("\n", ""));                    
+                    if(address.size() == 5){
+                        address.remove(1);
+                    }
+                    
+                    infos.put("Rua", address.get(0).split(", ")[0]);
+                    infos.put("Rua numero", address.get(0).split(", ")[1]);
+                    infos.put("Bairro", address.get(1));
+                    infos.put("Cidade", removerAcentos(address.get(2).split(" - ")[0]).toUpperCase());
+                    infos.put("UF", address.get(2).split(" - ")[1]);
+                    infos.put("CEP", address.get(3).replaceAll("\n", ""));                    
                     
                     return infos;
                 }
