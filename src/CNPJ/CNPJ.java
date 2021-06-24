@@ -60,7 +60,7 @@ public class CNPJ {
                     addressHTML = addressHTML.split(".*Endere.o")[1].split("Contatos.*")[0];
                     addressHTML = addressHTML.replaceAll("<h3>", "").replaceAll("</h3>", "");
                     
-                    List<String> address = new ArrayList<String>(Arrays.asList(addressHTML.split("\n<br>")));
+                    List<String> address = new ArrayList<>(Arrays.asList(addressHTML.split("\n<br>")));
                     
                     if(address.size() == 5){
                         address.remove(1);
