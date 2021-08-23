@@ -21,7 +21,9 @@ public class CNPJ {
     private static final String cnpjInfoUrl = "http://cnpj.info/";
 
     public static void main(String[] args) {        
-        get("74873266000185");
+        System.out.println(
+                get("10345653000166")
+        );
     }
 
     /**
@@ -34,6 +36,9 @@ public class CNPJ {
      */
     public static Map<String, String> get(String cnpj) {
         try {
+            //Espera 6 segundos porque caso fiquem chamando o get vai ficar 10 por minuto
+            Thread.sleep(6000);
+            
             String cnpjOnlyNumbers = cnpj.replaceAll("[^0-9]+", "");
 
             if (cnpjOnlyNumbers.length() == 14) {
