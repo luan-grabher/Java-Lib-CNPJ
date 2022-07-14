@@ -27,6 +27,8 @@ public class CNPJ {
     private static final String backupPath = System.getProperty("user.home") + "\\Desktop\\CNPJs.backup";
     private static Map<String, Map<String, String>> backup = new HashMap<>();
 
+    private static String cnpjOnlyNumbers = "";
+
     /**
      * Retorna mapa de informações do CNPJ do site cnpj.info
      *
@@ -37,7 +39,7 @@ public class CNPJ {
      */
     public static Map<String, String> get(String cnpj) {
         try {            
-            String cnpjOnlyNumbers = cnpj.replaceAll("[^0-9]+", "");
+            cnpjOnlyNumbers = cnpj.replaceAll("[^0-9]+", "");
 
             if (cnpjOnlyNumbers.length() == 14) {
                 //carrega backup
@@ -99,6 +101,12 @@ public class CNPJ {
             e.printStackTrace();
         }
 
+        //Se o CNPJ ja estiver no backup, retorna o backup
+        if (backup.containsKey(cnpjOnlyNumbers)) {
+            return backup.get(cnpjOnlyNumbers);
+        }
+
+        //Se o CNPJ nao existe, nao tiver 14 caracteres, nao estiver no backup, ou se ocorrer um erro, retorna null
         return null;
     }
     
