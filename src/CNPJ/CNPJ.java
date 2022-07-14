@@ -8,6 +8,7 @@ import java.nio.charset.Charset;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,33 +16,41 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
+import java.io.ObjectInputStream;
+import java.io.FileInputStream;
 
 public class CNPJ {
 
     private static final String cnpjInfoUrl = "http://cnpj.info/";
-
-    public static void main(String[] args) {        
-        System.out.println(
-                get("10345653000166")
-        );
-    }
+    private static final String backupPath = System.getProperty("user.home") + "\\Desktop\\CNPJs.backup";
+    private static Map<String, Map<String, String>> backup = new HashMap<>();
 
     /**
      * Retorna mapa de informações do CNPJ do site cnpj.info
      *
      * @param cnpj CNPJ da empresa, serao considerados somente os numeros com
      * regex.
-     * @return REtorna null caso ocorra um erro ou o cnpj não tenha 14
+     * @return Retorna null caso ocorra um erro ou o cnpj não tenha 14
      * caracteres.
      */
     public static Map<String, String> get(String cnpj) {
-        try {
-            //Espera 6 segundos porque caso fiquem chamando o get vai ficar 10 por minuto
-            Thread.sleep(6000);
-            
+        try {            
             String cnpjOnlyNumbers = cnpj.replaceAll("[^0-9]+", "");
 
             if (cnpjOnlyNumbers.length() == 14) {
+                //carrega backup
+                loadBackup();
+
+                //Se o CNPJ ja estiver no backup e o 'Updated'(Time do getTime do Calendar) for menor que 3 dias, retorna o backup 
+                if (backup.containsKey(cnpjOnlyNumbers) && (Calendar.getInstance().getTimeInMillis() - Long.parseLong(backup.get(cnpjOnlyNumbers).get("updated")) < 2592000000L)) {
+                    return backup.get(cnpjOnlyNumbers);
+                }
+
+                //Espera 6 segundos porque caso fiquem chamando o get vai ficar 10 por minuto
+                Thread.sleep(6000);
+
                 URL url = new URL(cnpjInfoUrl + cnpjOnlyNumbers);
                 HttpURLConnection con = (HttpURLConnection) url.openConnection();
                 con.setRequestMethod("GET");
@@ -71,13 +80,18 @@ public class CNPJ {
                         address.remove(1);
                     }
                     
+                    infos.put("CNPJ", cnpjOnlyNumbers.toString());
                     infos.put("Rua", address.get(0).split(", ")[0]);
                     infos.put("Rua numero", address.get(0).split(", ")[1]);
                     infos.put("Bairro", address.get(1));
                     infos.put("Cidade", removerAcentos(address.get(2).split(" - ")[0]).toUpperCase());
                     infos.put("UF", address.get(2).split(" - ")[1]);
-                    infos.put("CEP", address.get(3).replaceAll("\n", ""));                    
+                    infos.put("CEP", address.get(3).replaceAll("\n", ""));
+                    infos.put("updated", String.valueOf(Calendar.getInstance().getTimeInMillis()));
                     
+                    //Salva no backup
+                    save(infos);
+
                     return infos;
                 }
             }
@@ -113,6 +127,46 @@ public class CNPJ {
         } catch (Exception e) {
             e.printStackTrace();
             return "";
+        }
+    }
+
+
+    /*
+     * Save cnpj to file
+     */
+    public static Boolean save(Map<String, String> infos) {
+        try {
+            //Insere as infos no mapa de backup usando a chave como o CNPJ
+            backup.put(infos.get("CNPJ"), infos);
+            //Salva o mapa de backup no arquivo 'CNPJs.backup' no desktop do usuario
+            FileOutputStream fos = new FileOutputStream(backupPath);
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(backup);
+            oos.close();
+
+            return true;
+        } catch (Exception e) {
+            //e.printStackTrace();
+            return false;
+        }
+    }
+
+    /*
+     * Load cnpj from file
+     */
+    public static Map<String, Map<String, String>> loadBackup() {
+        try {
+            //Carrega o mapa de backup do arquivo 'CNPJs.backup' no desktop do usuario
+            FileInputStream fis = new FileInputStream(backupPath);
+            ObjectInputStream ois = new ObjectInputStream(fis);
+            backup = (Map<String, Map<String, String>>) ois.readObject();
+            ois.close();
+
+            return backup;
+        } catch (Exception e) {
+            //e.printStackTrace();
+            //empty map
+            return new HashMap<>();
         }
     }
 }
